@@ -1,0 +1,6 @@
+{
+  "port": 5000,
+  "jwtSecret": "artemon 228",
+  "mongoUrl": "mongodb://artem2427:123@ac-ezg7nia-shard-00-00.dxmqua7.mongodb.net:27017,ac-ezg7nia-shard-00-01.dxmqua7.mongodb.net:27017,ac-ezg7nia-shard-00-02.dxmqua7.mongodb.net:27017/?ssl=true&replicaSet=atlas-7o66sc-shard-0&authSource=admin&retryWrites=true&w=majority",
+  "baseUrl": "http://localhost:5000"
+}
