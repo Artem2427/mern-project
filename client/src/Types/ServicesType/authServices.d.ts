@@ -2,8 +2,9 @@ declare interface AuthServices {
   registrationNewUser: (body: LoginIfno) => Promise<{ message: string }>;
   getAccessKey: () => string | null;
   checkUser: (body: LoginIfno) => Promise<UserInfo>;
-  isLoggedIn: () => boolean;
   logout: () => void;
+  getAccessToken: () => Promise<{ token: string }>;
+  isLoggedIn: () => boolean;
 }
 
 declare interface LoginIfno {

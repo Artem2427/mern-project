@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Typography } from "antd";
 
@@ -9,31 +9,29 @@ import Loader from "../../Components/Loader";
 import loaderStyles from "../../Utils/Styles/loaderStyle";
 import useStyles from "./style";
 import axios from "axios";
-import { Methods, TypeNotification } from "../../Utils/enums";
+import { TypeNotification } from "../../Utils/enums";
 import { useMessage } from "../../Hooks/message.hook";
 import { DataError } from "../AuthPage";
 import { useHttp } from "../../Hooks/http.hook";
-import { AuthContext } from "../../Context/AuthContext";
 
 const { Title, Paragraph } = Typography;
 
 const DetailPage = () => {
-  const { token } = useContext(AuthContext);
   const classes = useStyles();
   const spin = loaderStyles();
   const message = useMessage();
-  const { request, loading } = useHttp();
+  const { loading } = useHttp();
   const [link, setLink] = useState<null | LinkDTO>(null);
 
   const linkId = useParams().id;
 
   const fetchLink = useCallback(async () => {
     try {
-      // const newLink = await linksService.getLinkById(linkId ?? "");
+      const newLink = await linksService.getLinkById(linkId ?? "");
 
-      const newLink = await request(`/api/link/${linkId}`, Methods.get, null, {
-        Authorization: `Bearer ${token}`,
-      });
+      // const newLink = await request(`/api/link/${linkId}`, Methods.get, null, {
+      //   Authorization: `Bearer ${token}`,
+      // });
       setLink(newLink);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

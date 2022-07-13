@@ -18,8 +18,6 @@ const CreatePage = () => {
     try {
       const { link } = await linksService.createLink({ from: values.link });
 
-      console.log(link, "link");
-
       form.setFieldsValue({ link: "" });
       navigate(`/detail/${link._id}`);
     } catch (error) {

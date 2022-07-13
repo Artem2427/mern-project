@@ -13,6 +13,16 @@ const authServices: AuthServices = {
     return response.data;
   },
 
+  async getAccessToken() {
+    const response = await api.get("/auth/access-token");
+
+    return response.data;
+  },
+
+  async logout() {
+    await api.get("/auth/logout");
+  },
+
   getAccessKey(): string | null {
     const userData = localStorage.getItem("userData");
 
@@ -34,10 +44,6 @@ const authServices: AuthServices = {
     }
 
     return false;
-  },
-
-  logout() {
-    localStorage.removeItem("userData");
   },
 };
 

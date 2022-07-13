@@ -8,7 +8,7 @@ const router = Router();
 
 router.post('/generate', auth, async (req, res) => {
   try {
-    const baseUrl = config.get('baseUrl');
+    const baseUrl = process.env.BASEURL;
 
     const { from } = req.body;
 
@@ -21,8 +21,6 @@ router.post('/generate', auth, async (req, res) => {
     }
 
     const to = baseUrl + '/t/' + code;
-
-    console.log(to);
 
     const link = new Link({ code, to, from, owner: req.user.userId });
 

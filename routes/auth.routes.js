@@ -2,17 +2,28 @@ const { Router } = require("express");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
-const config = require('config');
+const createAccessToken = require('../utils/generateToken')
 
 const User = require('../models/User');
+
 const router = Router();
+
+
+const createLoginCookie = (res, accessToken) => {
+  res.cookie('token', accessToken, {
+    httpOnly: true,
+    secure: false,
+    path: '/api',
+    expires: new Date(Date.now() + 60 * 60 * 24 * 1000)
+  })
+}
 
 // /api/auth
 router.post(
   '/register',
   [
-    check('email', 'Некорректный email').isEmail(),
-    check('password', 'Минимальная длина пароля 6 символов').isLength({ min: 6 })
+    check('email', 'Некорректный email').isEmail().isLength({ max: 255 }),
+    check('password', 'Минимальная длина пароля 6 символов или слишком длинный пароль').isLength({ min: 6, max: 255 })
   ],
   async (req, res) => {
     try {
@@ -48,11 +59,27 @@ router.post(
     }
   })
 
+router.get('/access-token', async (req, res) => {
+  const accessToken = req.cookies.token;
+
+  if (!accessToken) {
+    return res.status(400).json({ message: "Войдите в систему" });
+  }
+
+  const result = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+  if (!result) {
+    return res.status(400).json({ message: "Неверний токен или закончился" });
+  }
+
+  res.json({ token: accessToken })
+})
+
 router.post(
   '/login',
   [
-    check('email', 'Введите корректный email').normalizeEmail().isEmail(),
-    check('password', 'Введіте пароль').exists()
+    check('email', 'Введите корректный email').normalizeEmail().isEmail().isLength({ max: 255 }),
+    check('password', 'Введіте пароль').isLength({ max: 255 }).exists()
   ],
   async (req, res) => {
     try {
@@ -79,11 +106,11 @@ router.post(
         return res.status(400).json({ message: 'Неверный пароль, попробуйте снова' })
       }
 
-      const token = jwt.sign(
-        { userId: user.id }, // обект с даними которые будут зашифрованы в jwt token
-        config.get('jwtSecret'), // секретный ключ
-        { expiresIn: '1h' } //обект через сколько jwt token закончит свое сущиствование
-      )
+
+
+      const token = createAccessToken(user._id)
+
+      createLoginCookie(res, token);
 
       res.json({
         token, userId: user.id
@@ -96,6 +123,15 @@ router.post(
       })
     }
   })
+
+router.get('/logout', (req, res) => {
+  res.cookie('token', '', {
+    hhtpOnly: true,
+    secure: false,
+    path: '/api',
+    expires: new Date(0)
+  }).send()
+})
 
 
 module.exports = router;

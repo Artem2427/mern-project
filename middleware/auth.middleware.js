@@ -6,19 +6,27 @@ module.exports = (req, res, next) => {
     return next();
   }
 
-  try {
-    const token = req.headers.authorization.split(' ')[1]; // Bearer Token
+  const accessToken = req.cookies.token;
 
-    if (!token) {
-      return res.status(401).json('Нет авторизации')
+  try {
+    // const token = req.headers.authorization.split(' ')[1]; // Bearer Token
+    // console.log(req.headers['cookie'], 'req.headers');
+
+    if (!accessToken) {
+      return res.status(401).json({ message: 'Нет авторизации' })
     }
 
-    const decoded = jwt.verify(token, config.get('jwtSecret'))
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+
+    console.log(decoded, 'decoded');
+    // if (!decoded) {
+
+    // }
 
     req.user = decoded;
     next();
 
   } catch (error) {
-    res.status(401).json('Нет авторизации')
+    res.status(401).json({ message: 'Нет авторизации' })
   }
 }
