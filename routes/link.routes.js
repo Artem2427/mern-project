@@ -2,7 +2,6 @@ const { Router } = require('express');
 const Link = require('../models/Link');
 const shortid = require('shortid');
 const auth = require('../middleware/auth.middleware');
-const config = require('config');
 
 const router = Router();
 
@@ -32,7 +31,7 @@ router.post('/generate', auth, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "Что-то пошло не так, попробуйте снова"
+      message: "Something go wrong, try it again"
     })
   }
 });
@@ -45,7 +44,7 @@ router.get('/all', auth, async (req, res) => {
 
   } catch (error) {
     res.status(500).json({
-      message: "Что-то пошло не так, попробуйте снова"
+      message: "Something go wrong, try it again"
     })
   }
 });
@@ -59,7 +58,7 @@ router.get('/:id', auth, async (req, res) => {
 
   } catch (error) {
     res.status(500).json({
-      message: "Что-то пошло не так, попробуйте снова"
+      message: "Something go wrong, try it again"
     })
   }
 })

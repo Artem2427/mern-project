@@ -12,12 +12,8 @@ const HomePage = () => {
 
   const auth = useContext(AuthContext);
 
-  const handleClick = () => {
-    navigate("/links/2");
-  };
-
   useEffect(() => {
-    if (!auth.isAuthenticated) {
+    if (!auth.isAuthenticated && !localStorage.getItem("userData")) {
       navigate("/login");
     }
   }, [auth.isAuthenticated, navigate]);
@@ -26,7 +22,6 @@ const HomePage = () => {
     <Row className={classes.root}>
       <Row className="container">
         <div> My first MERN aplication</div>
-        <div onClick={handleClick}>Detail</div>
       </Row>
     </Row>
   );

@@ -20,6 +20,7 @@ const items = (
       try {
         await authServices.logout();
         logout();
+        navigate("/login");
       } catch (error) {
         console.log(error);
       }

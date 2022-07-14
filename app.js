@@ -1,6 +1,6 @@
 const express = require('express');
-// const session = require('express-session');
-// const MongoDBSession = require("connect-mongodb-session")(session);
+const session = require('express-session');
+const MongoDBSession = require("connect-mongodb-session")(session);
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const mongoose = require("mongoose");
@@ -12,14 +12,30 @@ const app = express();
 app.use(express.json({ extended: true }));
 app.use(cookieParser());
 
+const store = new MongoDBSession({
+  uri: "mongodb://localhost:27017/sessions",
+  collection: 'mySessions'
+})
+
+
+app.use(session({
+  name: 'LOGIN',
+  secret: 'artemon228',
+  resave: false,
+  unset: 'destroy',
+  cookie: {
+    token: session.token,
+    userId: session.userId,
+  },
+  saveUninitialized: false,
+  store: store
+}))
+
 app.use(cors({
   origin: ['http://localhost:3000'],
   credentials: true
 }))
 
-app.use((req, res) => {
-  res.status(404).json({ message: "Not found" })
-})
 
 const PORT = process.env.PORT;
 
@@ -44,18 +60,7 @@ async function start() {
 
 start();
 
-// const store = new MongoDBSession({
-//   uri: "mongodb://localhost:27017/sessions",
-//   collection: 'mySessions'
-// })
 
-
-// app.use(session({
-//   secret: 'key that will sign cookie',
-//   resave: false,
-//   saveUninitialized: false,
-//   store: store
-// }))
 
 // app.get('/', (req, res) => {
 //   // req.session.isAuth = true;
@@ -68,6 +73,11 @@ start();
 app.use('/api/auth', require('./routes/auth.routes')); // middleware
 app.use('/api/link', require('./routes/link.routes'));
 app.use('/t', require('./routes/redirect.routes'));
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Not found" })
+})
+
 
 // if (process.env.NODE_ENV === 'production') {
 //   app.use('/', express.static(path.join(__dirname, 'client', 'build')))

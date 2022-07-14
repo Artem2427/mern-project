@@ -2,7 +2,8 @@ const { Router } = require("express");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
-const createAccessToken = require('../utils/generateToken')
+const createAccessToken = require('../utils/generateToken');
+const session = require('express-session');
 
 const User = require('../models/User');
 
@@ -22,8 +23,8 @@ const createLoginCookie = (res, accessToken) => {
 router.post(
   '/register',
   [
-    check('email', 'Некорректный email').isEmail().isLength({ max: 255 }),
-    check('password', 'Минимальная длина пароля 6 символов или слишком длинный пароль').isLength({ min: 6, max: 255 })
+    check('email', 'Email is incorrect').isEmail().isLength({ max: 255 }),
+    check('password', 'Min length password is 6 symbols or length is too long').isLength({ min: 6, max: 255 })
   ],
   async (req, res) => {
     try {
@@ -32,7 +33,7 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           errors: errors.array(),
-          message: 'Некоректные данные при регистрации'
+          message: 'Incorrect data during registration'
         })
       }
 
@@ -41,7 +42,7 @@ router.post(
       const candidate = await User.findOne({ email });
 
       if (candidate) {
-        return res.status(400).json({ message: 'Такой пользователь уже существует' })
+        return res.status(400).json({ message: 'User has been created' })
       }
 
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -50,26 +51,29 @@ router.post(
 
       await user.save();
 
-      res.status(201).json({ message: 'Пользователь создан' })
+      res.status(201).json({ message: 'User was created' })
 
     } catch (error) {
       res.status(500).json({
-        message: "Что-то пошло не так, попробуйте снова"
+        message: "Something go wrong, try it again"
       })
     }
   })
 
 router.get('/access-token', async (req, res) => {
-  const accessToken = req.cookies.token;
+  // const accessToken = req.cookies.token;
+  const accessToken = req.session.token;
 
   if (!accessToken) {
-    return res.status(400).json({ message: "Войдите в систему" });
+    req.session.destroy();
+
+    return res.status(400).json({ message: "Log in system" });
   }
 
   const result = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 
   if (!result) {
-    return res.status(400).json({ message: "Неверний токен или закончился" });
+    return res.status(400).json({ message: "Token is incorrect or time life is finished" });
   }
 
   res.json({ token: accessToken })
@@ -78,8 +82,8 @@ router.get('/access-token', async (req, res) => {
 router.post(
   '/login',
   [
-    check('email', 'Введите корректный email').normalizeEmail().isEmail().isLength({ max: 255 }),
-    check('password', 'Введіте пароль').isLength({ max: 255 }).exists()
+    check('email', 'Enter correct email').normalizeEmail().isEmail().isLength({ max: 255 }),
+    check('password', 'Enter password').isLength({ max: 255 }).exists()
   ],
   async (req, res) => {
     try {
@@ -88,7 +92,7 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           errors: errors.array(),
-          message: 'Некоректные данные при  входе в систему'
+          message: 'Incorrect data during login to account'
         })
       }
 
@@ -97,20 +101,22 @@ router.post(
       const user = await User.findOne({ email });
 
       if (!user) {
-        return res.status(400).json({ message: 'Пользователь не найден' })
+        return res.status(400).json({ message: 'User are not found' })
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(400).json({ message: 'Неверный пароль, попробуйте снова' })
+        return res.status(400).json({ message: 'Incorrect password or email, try it again' })
       }
 
 
 
       const token = createAccessToken(user._id)
 
-      createLoginCookie(res, token);
+      // createLoginCookie(res, token);
+      req.session.token = token;
+      req.session.userId = user._id;
 
       res.json({
         token, userId: user.id
@@ -119,18 +125,27 @@ router.post(
 
     } catch (error) {
       res.status(500).json({
-        message: "Что-то пошло не так, попробуйте снова"
+        message: "Something go wrong, try it again"
       })
     }
   })
 
 router.get('/logout', (req, res) => {
-  res.cookie('token', '', {
-    hhtpOnly: true,
-    secure: false,
-    path: '/api',
-    expires: new Date(0)
-  }).send()
+  req.session.destroy(err => {
+
+    if (err) {
+      return res.send({ error: 'Logout error' })
+    }
+
+    res.clearCookie('LOGIN', { path: '/' })
+    res.json({ message: "User was logout" })
+  });
+  // res.cookie('token', '', {
+  //   hhtpOnly: true,
+  //   secure: false,
+  //   path: '/api',
+  //   expires: new Date(0)
+  // }).send()
 })
 
 

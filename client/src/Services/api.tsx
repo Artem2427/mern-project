@@ -22,9 +22,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response.status === 401) {
-      authServices.logout();
       localStorage.removeItem("userData");
-      document.location.reload();
+      // document.location.reload();
     }
 
     return Promise.reject(error);

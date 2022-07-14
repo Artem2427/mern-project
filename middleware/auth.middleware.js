@@ -6,7 +6,9 @@ module.exports = (req, res, next) => {
     return next();
   }
 
-  const accessToken = req.cookies.token;
+  // const accessToken = req.cookies.token;
+
+  const accessToken = req.session.token;
 
   try {
     // const token = req.headers.authorization.split(' ')[1]; // Bearer Token

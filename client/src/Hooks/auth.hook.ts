@@ -42,7 +42,7 @@ export const useAuth = () => {
   useEffect(() => {
     const data = localStorage.getItem(storageName);
 
-    if (data) {
+    if (data && !token) {
       checkAuth()
         .then((token) => {
           const obj = JSON.parse(data);
@@ -55,7 +55,7 @@ export const useAuth = () => {
     }
 
     setReady(true);
-  }, [login, checkAuth]);
+  }, [login, checkAuth, token]);
 
   return { login, logout, token, userId, ready };
 };
